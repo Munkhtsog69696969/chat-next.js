@@ -12,7 +12,14 @@ module.exports = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+      height: {
+        100: '24rem',
+        120: "26rem",
+        160: "30rem",
+        220: "36rem",
+        270: "41rem"
+      },
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 }

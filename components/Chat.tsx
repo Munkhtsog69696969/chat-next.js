@@ -1,49 +1,74 @@
-import React, { useContext, useEffect, useState } from 'react'
-import Ably from "ably"
+import React, { use, useContext, useEffect, useState } from 'react'
 import { DataContext } from '@/context/DataProvider';
 import { useUser } from '@clerk/nextjs';
+import { ably } from '@/config/ably.config';
 
 export default function Chat() {
     const {user}=useUser();
     const {providerRoomId}=useContext(DataContext);
     // const roomId=sessionStorage.getItem("roomid");
     const [input,setInput]=useState<string>("");
-    const [messages,setMessages]=useState<{id:any,name:string,message:string,imageUrl:string,date:string}[]>([])
-
-    const ably = new Ably.Realtime.Promise("f6Y5Hg.Zq7QBg:4a_RlG4_RzF7LfTQhy_DAOsBpEZPiLfTjcz3_IFsHDo")
-    ably.connection.once('connected');
+    const [messages,setMessages]=useState<{email:string,name:string,message:string,imageUrl:string,date:string}[]>([])
 
     const channel = ably.channels.get(providerRoomId);
 
     channel.subscribe((message) => {
-        setMessages([...messages,{id:message.connectionId , message:message.data.message , name:message.data.name , imageUrl:message.data.imageUrl , date:message.data.date}])
+        setMessages([...messages,{email:message.data.email , message:message.data.message , name:message.data.name , imageUrl:message.data.imageUrl , date:message.data.date}])
     });
 
     const Send=async()=>{
         if(input){
-            channel.publish("user",{message:input,name:user?.firstName,imageUrl:user?.imageUrl,date:new Date().toString()});
+            channel.publish("user",{email:user?.primaryEmailAddress?.emailAddress,message:input,name:user?.firstName,imageUrl:user?.imageUrl,date:new Date().toString()});
+            setInput("");
+        }
+    }
+
+    document.onkeydown = (event) => {
+        if (event.key === "Enter") {
+            Send();
         }
     }
 
     return (
         <div className='flex flex-1 h-270 relative'>
-            <div className='border-black border-2 flex-1 h-5/6 overflow-hidden'>
+            <div className='flex-1 flex h-5/6 overflow-auto flex-col'>
                 {
                     messages?.map((message,i)=>{
                         return(
-                            <div key={i} className='chat chat-start'>
-                                <div className='chat-image avatar'>
-                                    <div className='w-10 rounded-full'>
-                                        <img src={message.imageUrl} />
+                           user?.primaryEmailAddress?.emailAddress!=message.email ?
+
+                           <div key={i} className="chat chat-start">
+                                <div className="chat-image avatar">
+                                    <div className="w-10 rounded-full">
+                                    <img src={message.imageUrl} />
                                     </div>
                                 </div>
                                 <div className="chat-header">
                                     {message.name}
-                                    <time className="text-xs opacity-50">{message.date}</time>
+                                    <time className="text-xs opacity-50">{message.date.substring(0,10)}</time>
                                 </div>
-                                <div className='chat-bubble'>
-                                    {message.message}
+                                <div className="chat-bubble chat-bubble-primary">{message.message}</div>
+                                {/* <div className="chat-footer opacity-50">
+                                    Delivered
+                                </div> */}
+                            </div>
+
+                            :
+
+                            <div key={i} className="chat chat-end">
+                                <div className="chat-image avatar">
+                                    <div className="w-10 rounded-full">
+                                    <img src={message.imageUrl} />
+                                    </div>
                                 </div>
+                                <div className="chat-header">
+                                    {message.name}
+                                    <time className="text-xs opacity-50">{message.date.substring(0,10)}</time>
+                                </div>
+                                <div className="chat-bubble chat-bubble-primary">{message.message}</div>
+                                {/* <div className="chat-footer opacity-50">
+                                    Seen at 12:46
+                                </div> */}
                             </div>
                         )
                     })

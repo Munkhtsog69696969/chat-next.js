@@ -2,13 +2,24 @@ import React, { use, useContext, useEffect, useState } from 'react'
 import { DataContext } from '@/context/DataProvider';
 import { useUser } from '@clerk/nextjs';
 import { ably } from '@/config/ably.config';
+import axios from 'axios';
 
 export default function Chat() {
     const {user}=useUser();
     const {providerRoomId}=useContext(DataContext);
     // const roomId=sessionStorage.getItem("roomid");
     const [input,setInput]=useState<string>("");
+
     const [messages,setMessages]=useState<{email:string,name:string,message:string,imageUrl:string,date:string}[]>([])
+
+    useEffect(()=>{
+        axios.post(`http://localhost:3000/api`,{id:providerRoomId})
+            .then((res)=>{
+                setMessages(res.data.messages)
+            }).catch((err)=>{
+                console.log(err)
+            })
+    },[]);
 
     const channel = ably.channels.get(providerRoomId);
 
@@ -18,6 +29,7 @@ export default function Chat() {
 
     const Send=async()=>{
         if(input){
+            await axios.put("http://localhost:3000/api",{id:providerRoomId,message:{email:user?.primaryEmailAddress?.emailAddress,message:input,name:user?.firstName,imageUrl:user?.imageUrl,date:new Date().toString()}})
             channel.publish("user",{email:user?.primaryEmailAddress?.emailAddress,message:input,name:user?.firstName,imageUrl:user?.imageUrl,date:new Date().toString()});
             setInput("");
         }

@@ -30,11 +30,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             room.messages.push(req.body.message);
 
             await room.save();
-          }
 
-          // res.send("new msg")
+            res.send("new msg")
+          }
         }catch(err){
           console.log(err)
         }
     }
+}
+
+export const config = {
+  api:{
+      externalResolver: true,
+  },
 }

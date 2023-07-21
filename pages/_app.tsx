@@ -18,7 +18,9 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps}/>
         </SignedIn>
         <SignedOut>
-          <SignInButton/>
+          <div className="w-screen h-screen flex justify-center items-center">
+            <SignInButton/>
+          </div>
         </SignedOut>
       </DataProvider>
     </ClerkProvider>

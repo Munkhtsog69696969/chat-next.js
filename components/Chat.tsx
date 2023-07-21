@@ -31,6 +31,9 @@ export default function Chat() {
         if(input){
             await axios.put("http://localhost:3000/api",{id:providerRoomId,message:{email:user?.primaryEmailAddress?.emailAddress,message:input,name:user?.firstName,imageUrl:user?.imageUrl,date:new Date().toString()}})
             channel.publish("user",{email:user?.primaryEmailAddress?.emailAddress,message:input,name:user?.firstName,imageUrl:user?.imageUrl,date:new Date().toString()});
+            let element:any = document.getElementById("commentsContainer");
+            // element.scrollTop = element.scrollHeight;
+            window.scrollTo(0, element.scrollHeight);
             setInput("");
         }
     }
@@ -43,7 +46,7 @@ export default function Chat() {
 
     return (
         <div className='flex flex-1 h-270 relative'>
-            <div className='flex-1 flex h-5/6 overflow-auto flex-col'>
+            <div id='commentsContainer' className='flex-1 flex h-5/6 overflow-auto scrolling-touch  flex-col'>
                 {
                     messages?.map((message,i)=>{
                         return(
@@ -53,7 +56,7 @@ export default function Chat() {
                                 <div className="chat-image avatar">
                                     <div className="w-10 rounded-full">
                                     <img src={message.imageUrl} />
-                                    </div>
+                                    </div>  
                                 </div>
                                 <div className="chat-header">
                                     {message.name}
